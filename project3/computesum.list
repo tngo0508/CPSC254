@@ -1,0 +1,102 @@
+     1                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3=========4=========5=========6=========7**
+     2                                  ;Author information
+     3                                  ;  Author name: Floyd Holliday
+     4                                  ;  Author email: holliday@fullerton.edu
+     5                                  ;  Author location: Costa Mesa
+     6                                  ;Course information
+     7                                  ;  Course number: CPSC254
+     8                                  ;  Assignment number: 3
+     9                                  ;  Due date: 2017-Jul-01
+    10                                  ;Project information
+    11                                  ;  Project title: Data Analysis
+    12                                  ;  Purpose: [Fill in a sentence here]
+    13                                  ;  Project files: sum-driver.cpp, sum-array-64.asm
+    14                                  ;Module information
+    15                                  ;  This module's call name: sum
+    16                                  ;  Language: X86-64
+    17                                  ;  Syntax: Intel
+    18                                  ;  Date last modified: 2017-Jul-01 [Fill in the correct date here]
+    19                                  ;  Purpose: This module will compute the sum of 64-bit doubles stored in an array.
+    20                                  ;  File name: sum-array-64.asm
+    21                                  ;  Status: This module was module is ready for delivery to students who have not yet enrolled in CPSC240
+    22                                  ;  Future enhancements: Improve execution speed by parallel processing: for instance, sum odd-numbered cells and even numbered cells concurrently,
+    23                                  ;                       then add the partial sums to obtain the complete sum.
+    24                                  ;  Parameters passed in: pointer to array of doubles
+    25                                  ;                        integer showing count of doubles in the array
+    26                                  ;  Parameters passed out: double containing the sum of doubles in the array
+    27                                  ;Translator information
+    28                                  ;  Linux: nasm -f elf64 -l sum-array-64.lis -o sum-array-64.o sum-array-64.asm
+    29                                  ;References and credits
+    30                                  ;  Seyfarth, Ray. Intro to 64 Bit Assembly Programming, ISBN=978-1484921906, Chapter 11.
+    31                                  ;Source code formatting:
+    32                                  ;  Page width: 172 columns
+    33                                  ;  Begin comments: column 61
+    34                                  ;  Optimal print specification: Landscape, 7 points or smaller, monospace, 8Â½x11 paper
+    35                                  ;
+    36                                  ;===== Begin code area =====================================================================================================================================================
+    37                                  
+    38                                  
+    39                                  
+    40                                  ;extern printf                                               ;External C++ function for writing to standard output device.  Not used in this function.
+    41                                  
+    42                                  ;extern scanf                                                ;External C++ function for reading from the standard input device.  Not used in this function.
+    43                                  
+    44                                  global sum                                                   ;This makes sum-array callable by functions outside of this file.
+    45                                  
+    46                                  segment .data                                                ;Place initialized data here
+    47                                  
+    48                                  ;This segment is empty because there are no messages to output from this function.
+    49                                  
+    50                                  segment .bss                                                 ;Declare pointers to un-initialized space in this segment.
+    51                                  
+    52                                  ;This segment is empty because there are no (new) pointers to be declared.
+    53                                  
+    54                                  ;===========================================================================================================================================================================
+    55                                  ;===== Begin the application here: Compute the sum of numbers in an array passed to this function
+    56                                  ;===========================================================================================================================================================================
+    57                                  
+    58                                  segment .text                                                ;Place executable instructions in this segment.
+    59                                  
+    60                                  sum:                                                         ;Entry point.  Execution begins here.
+    61                                  
+    62                                  ;The next two instructions are performed at the start of every assembly program.
+    63 00000000 55                      push       rbp                                               ;This marks the start of a new stack frame belonging to this execution of this function.
+    64 00000001 4889E5                  mov        rbp, rsp                                          ;rbp holds the address of the start of this new stack frame.  When this function returns to its caller rbp must
+    65                                                                                               ;hold the same value it holds now.
+    66                                  
+    67                                  ;=========== Back up incoming parameters ===================================================================================================================================
+    68                                  
+    69 00000004 4989FE                  mov        r14, rdi                                          ;Make a copy of the pointer to the incoming array
+    70 00000007 4989F7                  mov        r15, rsi                                          ;Make a second copy of the number elements in the array
+    71                                  
+    72                                  ;=========== Set up registers for the loop that follows ====================================================================================================================
+    73                                  
+    74 0000000A B900000000              mov qword  rcx, 0                                            ;The loop counter is initialized to zero
+    75 0000000F 6A00                    push qword 0                                                 ;Push 64 zero bits on the stack
+    76 00000011 F2440F100424            movsd      xmm8, [rsp]                                       ;Zero out the accumulating register
+    77 00000017 58                      pop        rax                                               ;Reverse the previous push
+    78                                  
+    79                                  ;===== Begin loop that will sum all numbers in the array ===================================================================================================================
+    80                                  
+    81                                  begin_loop:
+    82 00000018 4C39F9                  cmp        rcx, r15                                          ;Determine if the loop should continue or exit
+    83 0000001B 7D1A                    jge        end_loop                                          ;Exit from loop
+    84 0000001D 4D8B06                  mov        r8, [r14]                                         ;Copy one number from the array to a general purpose register
+    85 00000020 4150                    push       r8                                                ;Put that number on top of the stack
+    86 00000022 F2440F100C24            movsd      xmm9, [rsp]                                       ;Copy that same floating point number to a 64-bit floating point register
+    87 00000028 58                      pop        rax                                               ;Return the stack to the state it held before the recent push
+    88 00000029 F2450F58C1              addsd      xmm8, xmm9                                        ;Add the floating point number to the accumulator
+    89 0000002E 48FFC1                  inc        rcx                                               ;Increment the loop counter
+    90 00000031 4983C608                add        r14, 8                                            ;Advance the pointer to the next position in the array
+    91 00000035 EBE1                    jmp        begin_loop                                        ;Continue executing at the beginning of the loop
+    92                                  end_loop:                                                    ;A marker for the lower boundary of the loop
+    93                                  
+    94                                  ;===== The loop has finished.  Prepare to exit from this function ==========================================================================================================
+    95                                  
+    96 00000037 F2410F10C0              movsd      xmm0, xmm8                                        ;Copy the accumulated sum to the register designated for return values
+    97 0000003C 5D                      pop        rbp                                               ;Resort to rbp the value it had in the function that called this assembly function.
+    98 0000003D C3                      ret                                                          ;Pop the stack into the rip register which is the register of the next instrucction.
+    99                                  
+   100                                  ;========== End of function sum-array.asm ==================================================================================================================================
+   101                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3=========4=========5=========6=========7**
+   102                                  

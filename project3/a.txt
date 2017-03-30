@@ -1,0 +1,26 @@
+Welcome to Data Analysis by Thomas Ngo
+This program will compute certain statistical values.
+Please enter floating point data.
+After the last number has been entered press Ctrl + D.
+
+Thank you. The data you entered are
+             1.00000
+             2.00000
+             3.00000
+             4.00000
+The following statistics were computed
+Sum:                         10.00000
+Arithmetic mean:              2.50000
+Median:                       2.50000
+Harmonic mean:                1.92000
+The sorted data set is:
+             1.00000
+             2.00000
+             3.00000
+             4.00000
+The original data set is
+             1.00000
+             2.00000
+             3.00000
+             4.00000
+Thank you for using this program. Enjoy your statistics.
